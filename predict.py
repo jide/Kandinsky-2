@@ -6,15 +6,6 @@ import numpy as np
 
 
 class Predictor(BasePredictor):
-    def setup(self):
-        self.model = get_kandinsky2(
-            "cuda",
-            task_type="text2img",
-            cache_dir="./kandinsky2-weights",
-            model_version="2.1",
-            use_flash_attention=False,
-        )
-
     def predict(
         self,
         prompt: str = Input(description="Input Prompt",
@@ -55,17 +46,18 @@ class Predictor(BasePredictor):
         ),
     ) -> List[Path]:
         if mask:
-            # img = Image.open(mask).convert('L')
-            # img_np = np.array(img)
-            # mask = (img_np == 255).astype(np.float32)
+            model = get_kandinsky2(
+                "cuda",
+                task_type="inpainting",
+                cache_dir="./kandinsky2-weights",
+                model_version="2.1",
+                use_flash_attention=False,
+            )
 
-            mask = np.ones((width, height), dtype=np.float32)
-            mask[:, :200] = 0
-
-            images = self.model.generate_inpainting(
+            images = model.generate_inpainting(
                 prompt,
                 Image.open(init_image),
-                mask,
+                np.array(Image.open(mask).convert("L"), dtype=np.float32),
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
                 h=height,
@@ -75,7 +67,15 @@ class Predictor(BasePredictor):
                 prior_steps=prior_steps,
             )
         else:
-            images = self.model.generate_text2img(
+            model = get_kandinsky2(
+                "cuda",
+                task_type="text2img",
+                cache_dir="./kandinsky2-weights",
+                model_version="2.1",
+                use_flash_attention=False,
+            )
+
+            images = model.generate_text2img(
                 prompt,
                 num_steps=num_inference_steps,
                 batch_size=batch_size,
