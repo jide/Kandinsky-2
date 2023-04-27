@@ -58,10 +58,14 @@ class Predictor(BasePredictor):
             images = self.model.generate_inpainting(
                 prompt,
                 Image.open(init_image),
-                np.array(Image.open(mask).convert("1")),
+                np.array(Image.open(mask).convert("L"), dtype=np.float32),
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
+                h=height,
+                w=width,
                 sampler=scheduler,
+                prior_cf_scale=prior_cf_scale,
+                prior_steps=prior_steps,
             )
         else:
             images = self.model.generate_text2img(
