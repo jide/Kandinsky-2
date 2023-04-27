@@ -15,12 +15,19 @@ class Predictor(BasePredictor):
 
     def predict(
         self,
-        prompt: str = Input(description="Input Prompt", default="red cat, 4k photo"),
+        prompt: str = Input(description="Input Prompt",
+                            default="red cat, 4k photo"),
         num_inference_steps: int = Input(
             description="Number of denoising steps", ge=1, le=500, default=50
         ),
         guidance_scale: float = Input(
             description="Scale for classifier-free guidance", ge=1, le=20, default=4
+        ),
+        init_image: Path = Input(
+            description="Init image.",
+        ),
+        mask: Path = Input(
+            description="Mask.",
         ),
         scheduler: str = Input(
             description="Choose a scheduler",
@@ -45,17 +52,27 @@ class Predictor(BasePredictor):
             choices=[1, 2, 3, 4],
         ),
     ) -> List[Path]:
-        images = self.model.generate_text2img(
-            prompt,
-            num_steps=num_inference_steps,
-            batch_size=batch_size,
-            guidance_scale=guidance_scale,
-            h=height,
-            w=width,
-            sampler=scheduler,
-            prior_cf_scale=prior_cf_scale,
-            prior_steps=prior_steps,
-        )
+        if mask:
+            images = self.model.generate_text2img(
+                prompt,
+                num_steps=num_inference_steps,
+                batch_size=batch_size,
+                guidance_scale=guidance_scale,
+                h=height,
+                w=width,
+                sampler=scheduler,
+                prior_cf_scale=prior_cf_scale,
+                prior_steps=prior_steps,
+            )
+        else:
+            images = self.model.generate_inpainting(
+                prompt,
+                init_image,
+                mask,
+                num_steps=num_inference_steps,
+                guidance_scale=guidance_scale,
+                sampler=scheduler,
+            )
         output = []
         for i, im in enumerate(images):
             out = f"/tmp/out_{i}.png"
