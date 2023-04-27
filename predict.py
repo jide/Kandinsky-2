@@ -55,10 +55,14 @@ class Predictor(BasePredictor):
         ),
     ) -> List[Path]:
         if mask:
+            img = Image.open(mask).convert('L')
+            img_np = np.array(img)
+            mask = (img_np == 255).astype(np.float32)
+
             images = self.model.generate_inpainting(
                 prompt,
                 Image.open(init_image),
-                np.array(Image.open(mask).convert("L"), dtype=np.float32),
+                mask,
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
                 h=height,
