@@ -54,14 +54,11 @@ class Predictor(BasePredictor):
                 use_flash_attention=False,
             )
 
-            mask = np.ones((768, 768), dtype=np.float32)
-            mask[:, :250] = 0
-
             images = model.generate_inpainting(
                 prompt,
-                Image.open(init_image),
-                # mask,
-                np.array(Image.open(mask).convert("L"), dtype=np.float32),
+                Image.open(init_image).convert("RGB").resize((width, height)),
+                np.array(Image.open(mask).convert(
+                    "RGB").convert("L").resize(width, height)),
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
                 h=height,
@@ -90,10 +87,13 @@ class Predictor(BasePredictor):
                 prior_cf_scale=prior_cf_scale,
                 prior_steps=prior_steps,
             )
+
         output = []
+
         for i, im in enumerate(images):
             out = f"/tmp/out_{i}.png"
             im.save(out)
             im.save(f"out_{i}.png")
             output.append(Path(out))
+
         return output
