@@ -56,9 +56,8 @@ class Predictor(BasePredictor):
 
             images = model.generate_inpainting(
                 prompt,
-                Image.open(init_image).convert("RGB").resize((width, height)),
-                np.array(Image.open(mask).convert(
-                    "RGB").convert("L").resize(width, height)),
+                Image.open(init_image).convert("RGB"),
+                np.array(Image.open(mask).convert("RGB")),
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
                 h=height,
