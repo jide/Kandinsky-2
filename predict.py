@@ -54,10 +54,14 @@ class Predictor(BasePredictor):
                 use_flash_attention=False,
             )
 
+            mask = np.ones((768, 768), dtype=np.float32)
+            mask[:, :250] = 0
+
             images = model.generate_inpainting(
                 prompt,
                 Image.open(init_image),
-                np.array(Image.open(mask).convert("L"), dtype=np.float32),
+                mask,
+                # np.array(Image.open(mask).convert("L"), dtype=np.float32),
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
                 h=height,
