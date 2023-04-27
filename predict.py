@@ -57,7 +57,7 @@ class Predictor(BasePredictor):
         if mask:
             images = self.model.generate_inpainting(
                 prompt,
-                np.array(Image.open(init_image)),
+                Image.open(init_image),
                 np.array(Image.open(mask).convert("1")),
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
