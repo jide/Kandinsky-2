@@ -53,6 +53,15 @@ class Predictor(BasePredictor):
         ),
     ) -> List[Path]:
         if mask:
+            images = self.model.generate_inpainting(
+                prompt,
+                init_image,
+                mask,
+                num_steps=num_inference_steps,
+                guidance_scale=guidance_scale,
+                sampler=scheduler,
+            )
+        else:
             images = self.model.generate_text2img(
                 prompt,
                 num_steps=num_inference_steps,
@@ -63,15 +72,6 @@ class Predictor(BasePredictor):
                 sampler=scheduler,
                 prior_cf_scale=prior_cf_scale,
                 prior_steps=prior_steps,
-            )
-        else:
-            images = self.model.generate_inpainting(
-                prompt,
-                init_image,
-                mask,
-                num_steps=num_inference_steps,
-                guidance_scale=guidance_scale,
-                sampler=scheduler,
             )
         output = []
         for i, im in enumerate(images):
