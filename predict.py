@@ -2,6 +2,7 @@ from typing import List
 from cog import BasePredictor, Input, Path
 from kandinsky2 import get_kandinsky2
 from PIL import Image
+import numpy as np
 
 
 class Predictor(BasePredictor):
@@ -56,8 +57,8 @@ class Predictor(BasePredictor):
         if mask:
             images = self.model.generate_inpainting(
                 prompt,
-                Image.open(init_image),
-                Image.open(mask),
+                np.array(Image.open(init_image)),
+                np.array(Image.open(mask).convert("1")),
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
                 sampler=scheduler,
