@@ -18,9 +18,11 @@ class Predictor(BasePredictor):
         ),
         init_image: Path = Input(
             description="Init image.",
+            default=None
         ),
         mask: Path = Input(
             description="Mask.",
+            default=None
         ),
         scheduler: str = Input(
             description="Choose a scheduler",
@@ -54,11 +56,18 @@ class Predictor(BasePredictor):
                 use_flash_attention=False,
             )
 
+            init_image = Image.open(init_image).convert("RGB")
+            mask = Image.open(mask).convert("RGB")
+
+            init_image = init_image.resize((768, 768))
+            # converting mask to grayscale (single-channel) image
+            mask = mask.convert('L').resize((768, 768))
+            mask = np.array(mask) / 255.0  # normalizing mask
+
             images = model.generate_inpainting(
                 prompt,
-                Image.open(init_image).convert("RGB").resize((width, height)),
-                np.array(Image.open(mask).convert(
-                    "RGB").convert("L").resize((width, height))),
+                init_image,
+                mask,
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
                 h=height,
