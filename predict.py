@@ -10,6 +10,8 @@ class Predictor(BasePredictor):
         self,
         prompt: str = Input(description="Input Prompt",
                             default="red cat, 4k photo"),
+        negative_prompt: str = Input(description="Negative Prompt",
+                                     default="realistic photo details"),
         num_inference_steps: int = Input(
             description="Number of denoising steps", ge=1, le=500, default=50
         ),
@@ -59,15 +61,16 @@ class Predictor(BasePredictor):
             init_image = Image.open(init_image).convert("RGB")
             mask = Image.open(mask).convert("RGB")
 
-            init_image = init_image.resize((768, 768))
+            init_image = init_image.resize((width, height))
             # converting mask to grayscale (single-channel) image
-            mask = mask.convert('L').resize((768, 768))
+            mask = mask.convert('L').resize((width, height))
             mask = np.array(mask) / 255.0  # normalizing mask
 
             images = model.generate_inpainting(
                 prompt,
                 init_image,
                 mask,
+                negative_decoder_prompt=negative_prompt,
                 num_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
                 h=height,
@@ -87,6 +90,7 @@ class Predictor(BasePredictor):
 
             images = model.generate_text2img(
                 prompt,
+                negative_decoder_prompt=negative_prompt,
                 num_steps=num_inference_steps,
                 batch_size=batch_size,
                 guidance_scale=guidance_scale,
